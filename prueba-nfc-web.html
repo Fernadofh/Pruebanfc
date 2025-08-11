@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prueba NFC Web</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f0f0f0;
+            text-align: center;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            background-color: #0078d7;
+            border: none;
+            color: white;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #005fa3;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+            min-height: 100px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body>
+    <h1>Prueba de lectura NFC desde Web</h1>
+    <button id="leerNFC">Leer etiqueta NFC</button>
+    <div id="output">Aquí aparecerán los datos de la etiqueta NFC</div>
+
+    <script>
+        const btn = document.getElementById('leerNFC');
+        const output = document.getElementById('output');
+
+        btn.addEventListener('click', async () => {
+            if ('NDEFReader' in window) {
+                try {
+                    const reader = new NDEFReader();
+                    await reader.scan();
+                    output.textContent = "Acerca tu etiqueta NFC...";
+
+                    reader.onreading = event => {
+                        const decoder = new TextDecoder();
+                        let text = "";
+                        for (const record of event.message.records) {
+                            text += `Tipo: ${record.recordType}\n`;
+                            text += `Datos: ${decoder.decode(record.data)}\n\n`;
+                        }
+                        output.textContent = text || "Etiqueta vacía o no reconocida.";
+                    };
+
+                    reader.onerror = event => {
+                        output.textContent = "Error al leer NFC: " + event.message;
+                    };
+
+                } catch (error) {
+                    output.textContent = "Error iniciando lectura NFC: " + error;
+                }
+            } else {
+                output.textContent = "Tu navegador no soporta Web NFC.";
+            }
+        });
+    </script>
+</body>
+</html>
